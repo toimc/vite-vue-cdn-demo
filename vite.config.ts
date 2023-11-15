@@ -18,68 +18,71 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { cdn } from 'vite-plugin-cdn2'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    VueRouter({
-      /* options */
-    }),
-    vue(),
-    vueJsx(),
-    Layouts(),
-    UnoCSS(),
-    AutoImport({
-      include: [
-        /\.[tj]sx?$/, // .ts, .tsx, .js, .jsx
-        /\.vue$/,
-        /\.vue\?vue/, // .vue
-        /\.md$/ // .md
-      ],
+export default defineConfig(({ mode }) => {
+  const isProd = mode === 'production'
+  return {
+    plugins: [
+      VueRouter({
+        /* options */
+      }),
+      vue(),
+      vueJsx(),
+      Layouts(),
+      UnoCSS(),
+      AutoImport({
+        include: [
+          /\.[tj]sx?$/, // .ts, .tsx, .js, .jsx
+          /\.vue$/,
+          /\.vue\?vue/, // .vue
+          /\.md$/ // .md
+        ],
 
-      // global imports to register
-      imports: [
-        // presets
-        'vue',
-        // 'vue-router'
-        VueRouterAutoImports,
-        '@vueuse/core'
-      ],
-      resolvers: [ElementPlusResolver()],
-      vueTemplate: true
-    }),
-    Components({
-      directoryAsNamespace: false,
-      collapseSamePrefixes: true,
-      resolvers: [ElementPlusResolver()]
-    }),
-    cdn({
-      url: 'https://unpkg.com',
-      modules: [
-        { name: 'vue', relativeModule: './dist/vue.global.prod.js' },
-        { name: 'vue-demi', relativeModule: './dist/index.iife.js' },
-        {
-          name: 'vue-router',
-          aliases: ['auto'],
-          relativeModule: './dist/vue-router.global.prod.js'
-        },
-        {
-          name: 'element-plus',
-          relativeModule: './dist/index.full.min.js',
-          aliases: ['es', 'lib'],
-          spare: [
-            'https://cdn.jsdelivr.net/npm/element-plus@2.4.2/dist/index.min.css',
-            'https://cdn.jsdelivr.net/npm/element-plus@2.4.2/theme-chalk/dark/css-vars.css'
-          ]
-        },
-        { name: 'pinia', relativeModule: './dist/iife.prod.js' }
-      ]
-    })
-  ],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+        // global imports to register
+        imports: [
+          // presets
+          'vue',
+          // 'vue-router'
+          VueRouterAutoImports,
+          '@vueuse/core'
+        ],
+        resolvers: isProd ? [] : [ElementPlusResolver()],
+        vueTemplate: true
+      }),
+      Components({
+        directoryAsNamespace: false,
+        collapseSamePrefixes: true,
+        resolvers: isProd ? [] : [ElementPlusResolver()]
+      }),
+      cdn({
+        url: 'https://unpkg.com',
+        modules: [
+          { name: 'vue', relativeModule: './dist/vue.global.prod.js' },
+          { name: 'vue-demi', relativeModule: './lib/index.iife.js' },
+          // {
+          //   name: 'vue-router',
+          //   aliases: ['auto'],
+          //   relativeModule: './dist/vue-router.global.prod.js'
+          // },
+          {
+            name: 'element-plus',
+            relativeModule: './dist/index.full.min.js',
+            aliases: ['es', 'lib'],
+            spare: [
+              'https://cdn.jsdelivr.net/npm/element-plus@2.4.2/dist/index.min.css',
+              'https://cdn.jsdelivr.net/npm/element-plus@2.4.2/theme-chalk/dark/css-vars.css'
+            ]
+          },
+          { name: 'pinia', relativeModule: './dist/pinia.iife.prod.js' }
+        ]
+      })
+    ],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      }
+    },
+    server: {
+      port: 5175
     }
-  },
-  server: {
-    port: 5175
   }
 })
